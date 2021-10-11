@@ -52,6 +52,7 @@ public class JdbcPetRepositoryImpl<T> implements PetRepository {
 	private OwnerRepository ownerRepository;
 
 	private VisitRepository visitRepository;
+
 	private JpaRepository<T, List<Pet>> EntityUtils;
 
 	@Autowired
@@ -79,7 +80,7 @@ public class JdbcPetRepositoryImpl<T> implements PetRepository {
 			Map<String, Object> params = new HashMap<>();
 			params.put("id", id);
 			ownerId = this.namedParameterJdbcTemplate.queryForObject("SELECT owner_id FROM pets WHERE id=:id", params,
-				Integer.class);
+					Integer.class);
 		}
 		catch (EmptyResultDataAccessException ex) {
 			throw new ObjectRetrievalFailureException(Pet.class, id);
