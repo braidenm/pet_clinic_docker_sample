@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,29 +15,24 @@
  */
 package org.springframework.samples.petclinic.repository.jdbc;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.orm.ObjectRetrievalFailureException;
-import org.springframework.samples.petclinic.model.Owner;
-import org.springframework.samples.petclinic.model.Pet;
-import org.springframework.samples.petclinic.model.PetType;
-import org.springframework.samples.petclinic.model.Visit;
-import org.springframework.samples.petclinic.repository.OwnerRepository;
-import org.springframework.samples.petclinic.repository.PetRepository;
-import org.springframework.samples.petclinic.repository.VisitRepository;
+import org.springframework.samples.petclinic.owner.*;
 import org.springframework.samples.petclinic.util.EntityUtils;
+import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.stereotype.Repository;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Ken Krebs
@@ -48,7 +43,7 @@ import org.springframework.stereotype.Repository;
  * @author Mark Fisher
  */
 @Repository
-public class JdbcPetRepositoryImpl implements PetRepository {
+public class JdbcPetRepositoryImpl<T> implements PetRepository {
 
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
@@ -57,6 +52,7 @@ public class JdbcPetRepositoryImpl implements PetRepository {
 	private OwnerRepository ownerRepository;
 
 	private VisitRepository visitRepository;
+	private JpaRepository<T, List<Pet>> EntityUtils;
 
 	@Autowired
 	public JdbcPetRepositoryImpl(DataSource dataSource, OwnerRepository ownerRepository,
@@ -77,19 +73,19 @@ public class JdbcPetRepositoryImpl implements PetRepository {
 	}
 
 	@Override
-	public Pet findById(int id) throws DataAccessException {
+	public Pet findById(Integer id) {
 		Integer ownerId;
 		try {
 			Map<String, Object> params = new HashMap<>();
 			params.put("id", id);
 			ownerId = this.namedParameterJdbcTemplate.queryForObject("SELECT owner_id FROM pets WHERE id=:id", params,
-					Integer.class);
+				Integer.class);
 		}
 		catch (EmptyResultDataAccessException ex) {
 			throw new ObjectRetrievalFailureException(Pet.class, id);
 		}
 		Owner owner = this.ownerRepository.findById(ownerId);
-		return EntityUtils.getById(owner.getPets(), Pet.class, id);
+		return (Pet) EntityUtils.getById(owner.getPets(), Pet.class, id);
 	}
 
 	@Override
@@ -111,7 +107,7 @@ public class JdbcPetRepositoryImpl implements PetRepository {
 	 */
 	private MapSqlParameterSource createPetParameterSource(Pet pet) {
 		return new MapSqlParameterSource().addValue("id", pet.getId()).addValue("name", pet.getName())
-				.addValue("birth_date", pet.getBirthDate().toDate()).addValue("type_id", pet.getType().getId())
+				.addValue("birth_date", pet.getBirthDate()).addValue("type_id", pet.getType().getId())
 				.addValue("owner_id", pet.getOwner().getId());
 	}
 
