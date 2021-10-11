@@ -8,5 +8,14 @@ mysql:
     - MYSQL_USER=petclinic
     - MYSQL_PASSWORD=petclinic
     - MYSQL_DATABASE=petclinic
+  services:
+    nginx:
+      image: nginx
+      volumes:
+        - mydata:/some/container/path
   volumes:
     - "./conf.d:/etc/mysql/conf.d:ro"
+#services:
+#  worker:
+#    image: braidenmiller/privateimage
+#    x-aws-pull_credentials: "arn:aws:secretsmanager:eu-west-3:12345:secret:DockerHubAccessToken"
